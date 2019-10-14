@@ -25,13 +25,21 @@ public class Tile {
         possibleValues.clear();
     }
 
-    synchronized void addPossibleValue(int i) {
+    synchronized void updatePossibleValue(int i, boolean add) {
+        if (add) {
+            addPossibleValue(i);
+        } else {
+            removePossibleValue(i);
+        }
+    }
+
+    void addPossibleValue(int i) {
         if (!possibleValues.contains(i)) {
             possibleValues.add(i);
         }
     }
 
-    synchronized void removePossibleValue(int i) {
+    void removePossibleValue(int i) {
         if (possibleValues.contains(i)) {
             possibleValues.remove((Integer) i);
         }
