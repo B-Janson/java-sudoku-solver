@@ -25,15 +25,15 @@ public class Tile {
         possibleValues.clear();
     }
 
-    void addPossibleValue(int i) {
+    synchronized void addPossibleValue(int i) {
         if (!possibleValues.contains(i)) {
             possibleValues.add(i);
         }
     }
 
-    void removePossibleValue(int i) {
+    synchronized void removePossibleValue(int i) {
         if (possibleValues.contains(i)) {
-            possibleValues.remove((Object) i);
+            possibleValues.remove((Integer) i);
         }
     }
 
@@ -47,6 +47,6 @@ public class Tile {
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+        return String.format("%3d", value);
     }
 }
