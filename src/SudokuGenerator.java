@@ -60,7 +60,9 @@ class SudokuGenerator {
                 board[row][col] = 0;
                 // Find out if the current board is solvable
                 SingleSolver singleSolver = new SingleSolver();
-                ReturnStruct returnStruct = singleSolver.trySolve(board, false);
+                ParallelSolver parallelSolver = new ParallelSolver();
+//                ReturnStruct returnStruct = singleSolver.trySolve(board, false);
+                ReturnStruct returnStruct = parallelSolver.trySolveParallel(board, true);
                 solvable = returnStruct.solvable;
 
                 // If it was solvable, then keep it that way, otherwise put back the value that was there,

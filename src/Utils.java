@@ -70,6 +70,22 @@ class Utils {
         }
     }
 
+    static Tile[][] setupBoard(int[][] inputBoard) {
+        Main.numberSet = 0;
+        Tile[][] board = new Tile[Main.SIZE][Main.SIZE];
+        for (int row = 0; row < Main.SIZE; row++) {
+            for (int col = 0; col < Main.SIZE; col++) {
+                board[row][col] = new Tile();
+                if (inputBoard[row][col] != 0) {
+                    board[row][col].setValue(inputBoard[row][col]);
+                    Main.numberSet++;
+                }
+            }
+        }
+        return board;
+    }
+
+
     static void printBoard(Tile[][] board) {
         for (Tile[] boardRow : board) {
             for (Tile tile : boardRow) {

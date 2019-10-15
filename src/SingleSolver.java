@@ -1,13 +1,15 @@
 class SingleSolver {
 
     ReturnStruct trySolve(int[][] inputBoard, boolean debug) {
-        Tile[][] board = setupBoard(inputBoard);
+        Tile[][] board = Utils.setupBoard(inputBoard);
         int currentFound;
         int numRuns = 0;
+
         do {
             if (debug)
                 Utils.printBoard(board);
             numRuns++;
+//            System.out.println("Iteration " + numRuns);
             currentFound = Main.numberSet;
 
             for (int row = 0; row < Main.SIZE; row++) {
@@ -145,21 +147,6 @@ class SingleSolver {
             Utils.printBoard(board);
         }
         return new ReturnStruct(Utils.isComplete(), board);
-    }
-
-    private static Tile[][] setupBoard(int[][] inputBoard) {
-        Main.numberSet = 0;
-        Tile[][] board = new Tile[Main.SIZE][Main.SIZE];
-        for (int row = 0; row < Main.SIZE; row++) {
-            for (int col = 0; col < Main.SIZE; col++) {
-                board[row][col] = new Tile();
-                if (inputBoard[row][col] != 0) {
-                    board[row][col].setValue(inputBoard[row][col]);
-                    Main.numberSet++;
-                }
-            }
-        }
-        return board;
     }
 
     private void setValue(Tile[][] board, int row, int col, int value) {

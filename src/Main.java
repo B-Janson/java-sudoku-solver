@@ -5,8 +5,8 @@ public class Main {
 
     static Random random;
 
-    static final int DIFFICULTY = 5;
-    static final int MINI_SIZE = 10;
+    static final int DIFFICULTY = 100;
+    static final int MINI_SIZE = 3;
     static final int SIZE = MINI_SIZE * MINI_SIZE;
     static final String SAVED_INPUT = "data/" + SIZE + ".txt";
 
@@ -25,6 +25,7 @@ public class Main {
         SingleSolver singleSolver = new SingleSolver();
 
         // Single-Threaded
+        System.out.println("Solving single threaded");
         long startTimeSingle = System.nanoTime();
         ReturnStruct success = singleSolver.trySolve(inputBoardSingle, false);
         long endTimeSingle = System.nanoTime();
@@ -33,12 +34,13 @@ public class Main {
         ParallelSolver parallelSolver = new ParallelSolver();
 
         // Multi-Threaded
+        System.out.println("Solving parallel");
         long startTimeParallel = System.nanoTime();
         success = parallelSolver.trySolveParallel(inputBoardParallel, false);
         long endTimeParallel = System.nanoTime();
-//        Utils.verifyAgainstCSV(success.returnBoard);
+        Utils.verifyAgainstCSV(success.returnBoard);
 
-        System.out.println("Elapsed time: " + (endTimeSingle - startTimeSingle) / 1_000_000.0);
-        System.out.println("Elapsed time: " + (endTimeParallel - startTimeParallel) / 1_000_000.0);
+        System.out.println("Elapsed time single: " + (endTimeSingle - startTimeSingle) / 1_000_000.0);
+        System.out.println("Elapsed time parallel: " + (endTimeParallel - startTimeParallel) / 1_000_000.0);
     }
 }
