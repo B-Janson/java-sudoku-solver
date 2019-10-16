@@ -7,7 +7,7 @@ import java.util.List;
 
 class Utils {
 
-    static void saveBoardToCSV(int[][] board) {
+    static void saveBoardToCSV(int[][] board, String filename) {
         // Add all values to list of list
         List<List<String>> rows = new ArrayList<>();
         for (int[] row : board) {
@@ -21,7 +21,7 @@ class Utils {
         // Write each row to file
         FileWriter csvWriter;
         try {
-            csvWriter = new FileWriter(Main.SAVED_INPUT);
+            csvWriter = new FileWriter(filename);
 
             for (List<String> rowData : rows) {
                 csvWriter.append(String.join(",", rowData));
@@ -35,11 +35,11 @@ class Utils {
         }
     }
 
-    static void verifyAgainstCSV(Tile[][] inputBoard) {
+    static void verifyAgainstCSV(Tile[][] inputBoard, String filename) {
         BufferedReader csvReader;
         int inputVerification[][] = new int[Main.SIZE][Main.SIZE];
         try {
-            csvReader = new BufferedReader(new FileReader(Main.SAVED_INPUT));
+            csvReader = new BufferedReader(new FileReader(filename));
             String row;
             int r = 0;
             while ((row = csvReader.readLine()) != null) {

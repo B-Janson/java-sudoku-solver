@@ -1,37 +1,40 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 class SudokuGenerator {
 
-    static int[][] getTestInputBoard() {
+    static int[][] getTestInputBoard(Random random, int miniSize) {
+        int size = miniSize * miniSize;
+
         // Create empty sudoku of correct size
-        int[][] board = new int[Main.SIZE][Main.SIZE];
+        int[][] board = new int[size][size];
 
         // Create integers 1..SIZE
         List<Integer> permutationList = new ArrayList<>();
-        for (int i = 0; i < Main.SIZE; i++) {
+        for (int i = 0; i < size; i++) {
             permutationList.add(i + 1);
         }
 
         // Shuffle integers 1..SIZE
-        java.util.Collections.shuffle(permutationList, Main.random);
+        java.util.Collections.shuffle(permutationList, random);
 
         // Fill first row with shuffled integers
-        for (int col = 0; col < Main.SIZE; col++) {
+        for (int col = 0; col < size; col++) {
             board[0][col] = permutationList.get(col);
         }
 
-        for (int row = 1; row < Main.SIZE; row++) {
-            for (int col = 0; col < Main.SIZE; col++) {
+        for (int row = 1; row < size; row++) {
+            for (int col = 0; col < size; col++) {
                 // Amount to shift each following row by
-                int shift = Main.MINI_SIZE;
-                if (row % Main.MINI_SIZE == 0) {
+                int shift = miniSize;
+                if (row % miniSize == 0) {
                     shift = 1;
                 }
 
                 int wrapIndex = col - shift;
                 if (wrapIndex < 0) {
-                    wrapIndex = Main.SIZE + wrapIndex;
+                    wrapIndex = size + wrapIndex;
                 }
 
                 board[row][col] = board[row - 1][wrapIndex];
@@ -39,17 +42,18 @@ class SudokuGenerator {
         }
 
         // board is now completed sudoku so save as solution
-        Utils.saveBoardToCSV(board);
+        String filename = "data/" + miniSize + "_complete.txt";
+        Utils.saveBoardToCSV(board, filename);
 
-        int bestNumSet = Main.SIZE * Main.SIZE;
+        int bestNumSet = size * size;
 
         for (int attempt = 1; attempt <= Main.DIFFICULTY; attempt++) {
             System.out.println("Attempt # " + attempt + " of " + Main.DIFFICULTY);
             boolean solvable = true;
             do {
                 // Get random point
-                int row = Main.random.nextInt(Main.SIZE);
-                int col = Main.random.nextInt(Main.SIZE);
+                int row = random.nextInt(size);
+                int col = random.nextInt(size);
                 int prev = board[row][col];
                 // If already removed, try again
                 if (prev == 0) {
@@ -61,8 +65,8 @@ class SudokuGenerator {
                 // Find out if the current board is solvable
                 SingleSolver singleSolver = new SingleSolver();
                 ParallelSolver parallelSolver = new ParallelSolver();
-//                ReturnStruct returnStruct = singleSolver.trySolve(board, false);
-                ReturnStruct returnStruct = parallelSolver.trySolveParallel(board, true);
+                ReturnStruct returnStruct = singleSolver.trySolve(board, false);
+//                ReturnStruct returnStruct = parallelSolver.trySolveParallel(board, true);
                 solvable = returnStruct.solvable;
 
                 // If it was solvable, then keep it that way, otherwise put back the value that was there,
@@ -71,14 +75,17 @@ class SudokuGenerator {
 //                    System.out.println("Removing row:" + row + " col:" + col + " was solvable.");
                     bestNumSet--;
                 } else {
-                    System.out.println("Removing row:" + row + " col:" + col + " was not solvable.");
+//                    System.out.println("Removing row:" + row + " col:" + col + " was not solvable.");
                     board[row][col] = prev;
                 }
             } while (solvable);
         }
 
-        System.out.println("Finished creating sudoku with " + bestNumSet + " out of " + (Main.SIZE * Main.SIZE) + " initial elements");
+        System.out.println("Finished creating sudoku with " + bestNumSet + " out of " + (size * size) + " initial elements");
         System.out.println("~~~~~~~~~~~~~~~~~~~~~");
+
+        filename = "data/" + miniSize + ".txt";
+        Utils.saveBoardToCSV(board, filename);
 
         return board;
     }
