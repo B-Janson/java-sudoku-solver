@@ -1,18 +1,20 @@
 class ParallelSolver {
 
+    private static final int NUM_THREADS = 4;
+
     private Tile[][] board;
 
     private class MultiThreadingDemo implements Runnable {
 
-        private int row;
+        private int threadNo;
 
-        private MultiThreadingDemo(int row) {
-            this.row = row;
+        private MultiThreadingDemo(int threadNo) {
+            this.threadNo = threadNo;
         }
 
         @Override
         public void run() {
-            try {
+            for (int row = threadNo; row < Main.SIZE; row += NUM_THREADS) {
                 for (int col = 0; col < Main.SIZE; col++) {
                     Tile currTile = board[row][col];
                     if (currTile.getValue() != 0) {
@@ -29,8 +31,7 @@ class ParallelSolver {
                         setValue(board, row, col, 0);
                     }
                 }
-            } catch (Exception e) {
-                System.out.println(e);
+
             }
         }
     }
@@ -45,41 +46,43 @@ class ParallelSolver {
 
         @Override
         public void run() {
-            for (int test = 1; test <= Main.SIZE; test++) {
-                int rowCount = 0;
-                int lastRow = 0;
-                for (int row = 0; row < Main.SIZE; row++) {
-                    if (board[row][threadNumber].getValue() == test) {
-                        rowCount = 0;
-                        break;
+            for (int trial = threadNumber; trial < Main.SIZE; trial += NUM_THREADS) {
+                for (int test = 1; test <= Main.SIZE; test++) {
+                    int rowCount = 0;
+                    int lastRow = 0;
+                    for (int row = 0; row < Main.SIZE; row++) {
+                        if (board[row][trial].getValue() == test) {
+                            rowCount = 0;
+                            break;
+                        }
+
+                        if (board[row][trial].getPossibleValues().contains(test)) {
+                            rowCount++;
+                            lastRow = row;
+                        }
                     }
 
-                    if (board[row][threadNumber].getPossibleValues().contains(test)) {
-                        rowCount++;
-                        lastRow = row;
-                    }
-                }
-
-                if (rowCount == 1) {
-                    setValue(board, lastRow, threadNumber, test);
-                }
-
-                int colCount = 0;
-                int lastCol = 0;
-                for (int col = 0; col < Main.SIZE; col++) {
-                    if (board[threadNumber][col].getValue() == test) {
-                        colCount = 0;
-                        break;
+                    if (rowCount == 1) {
+                        setValue(board, lastRow, trial, test);
                     }
 
-                    if (board[threadNumber][col].getPossibleValues().contains(test)) {
-                        colCount++;
-                        lastCol = col;
-                    }
-                }
+                    int colCount = 0;
+                    int lastCol = 0;
+                    for (int col = 0; col < Main.SIZE; col++) {
+                        if (board[trial][col].getValue() == test) {
+                            colCount = 0;
+                            break;
+                        }
 
-                if (colCount == 1) {
-                    setValue(board, threadNumber, lastCol, test);
+                        if (board[trial][col].getPossibleValues().contains(test)) {
+                            colCount++;
+                            lastCol = col;
+                        }
+                    }
+
+                    if (colCount == 1) {
+                        setValue(board, trial, lastCol, test);
+                    }
                 }
             }
         }
@@ -95,64 +98,66 @@ class ParallelSolver {
 
         @Override
         public void run() {
-            for (int squareCol = 0; squareCol < Main.MINI_SIZE; squareCol++) {
-                for (int test = 1; test <= Main.SIZE; test++) {
-                    int count = 0;
-                    int lastRow = -1;
-                    int lastCol = -1;
-                    boolean sameRow = true;
-                    boolean sameCol = true;
+            for (int trial = squareRow; trial < Main.MINI_SIZE; trial += NUM_THREADS) {
+                for (int squareCol = 0; squareCol < Main.MINI_SIZE; squareCol++) {
+                    for (int test = 1; test <= Main.SIZE; test++) {
+                        int count = 0;
+                        int lastRow = -1;
+                        int lastCol = -1;
+                        boolean sameRow = true;
+                        boolean sameCol = true;
 
-                    for (int i = 0; i < Main.SIZE; i++) {
-                        int row = squareRow * Main.MINI_SIZE + (i / Main.MINI_SIZE);
-                        int col = squareCol * Main.MINI_SIZE + (i % Main.MINI_SIZE);
-                        Tile currTile = board[row][col];
-
-                        if (board[row][col].getValue() == test) {
-                            count = 0;
-                            break;
-                        }
-
-                        if (board[row][col].getPossibleValues().contains(test)) {
-                            count++;
-
-                            if (lastRow != -1 && row != lastRow) {
-                                sameRow = false;
-                            }
-
-                            if (lastCol != -1 && col != lastCol) {
-                                sameCol = false;
-                            }
-
-                            lastRow = row;
-                            lastCol = col;
-                        }
-                    }
-
-                    if (count == 0) {
-                        continue;
-                    }
-
-                    if (sameRow) {
-//                            System.out.println("All values of " + test + " occur in the same row for [" + lastRow + "][" + lastCol + "]");
                         for (int i = 0; i < Main.SIZE; i++) {
-                            if (!(i >= squareCol * Main.MINI_SIZE && i < (squareCol + 1) * Main.MINI_SIZE)) {
-                                board[lastRow][i].updatePossibleValue(test, false);
+                            int row = trial * Main.MINI_SIZE + (i / Main.MINI_SIZE);
+                            int col = squareCol * Main.MINI_SIZE + (i % Main.MINI_SIZE);
+                            Tile currTile = board[row][col];
+
+                            if (board[row][col].getValue() == test) {
+                                count = 0;
+                                break;
+                            }
+
+                            if (board[row][col].getPossibleValues().contains(test)) {
+                                count++;
+
+                                if (lastRow != -1 && row != lastRow) {
+                                    sameRow = false;
+                                }
+
+                                if (lastCol != -1 && col != lastCol) {
+                                    sameCol = false;
+                                }
+
+                                lastRow = row;
+                                lastCol = col;
                             }
                         }
-                    }
 
-                    if (sameCol) {
+                        if (count == 0) {
+                            continue;
+                        }
+
+                        if (sameRow) {
+//                            System.out.println("All values of " + test + " occur in the same threadNo for [" + lastRow + "][" + lastCol + "]");
+                            for (int i = 0; i < Main.SIZE; i++) {
+                                if (!(i >= squareCol * Main.MINI_SIZE && i < (squareCol + 1) * Main.MINI_SIZE)) {
+                                    board[lastRow][i].updatePossibleValue(test, false);
+                                }
+                            }
+                        }
+
+                        if (sameCol) {
 //                            System.out.println("All values of " + test + " occur in the same column for [" + lastRow + "][" + lastCol + "]");
-                        for (int i = 0; i < Main.SIZE; i++) {
-                            if (!(i >= squareRow * Main.MINI_SIZE && i < (squareRow + 1) * Main.MINI_SIZE)) {
-                                board[i][lastCol].updatePossibleValue(test, false);
+                            for (int i = 0; i < Main.SIZE; i++) {
+                                if (!(i >= trial * Main.MINI_SIZE && i < (trial + 1) * Main.MINI_SIZE)) {
+                                    board[i][lastCol].updatePossibleValue(test, false);
+                                }
                             }
                         }
-                    }
 
-                    if (count == 1) {
-                        setValue(board, lastRow, lastCol, test);
+                        if (count == 1) {
+                            setValue(board, lastRow, lastCol, test);
+                        }
                     }
                 }
             }
@@ -162,40 +167,39 @@ class ParallelSolver {
     ReturnStruct trySolveParallel(int[][] inputBoard, boolean debug) {
         board = Utils.setupBoard(inputBoard);
         int currentFound;
-        int numThreads = Main.SIZE;
-        Thread[] threads = new Thread[numThreads];
+        Thread[] threads = new Thread[NUM_THREADS];
+
+        // Add all possible values to grid
+        for (int row = 0; row < Main.SIZE; row++) {
+            for (int col = 0; col < Main.SIZE; col++) {
+                Tile currTile = board[row][col];
+                if (currTile.getValue() != 0) {
+                    continue;
+                }
+
+                for (int test = 1; test <= Main.SIZE; test++) {
+                    if (isValidFor(board, test, row, col)) {
+                        currTile.addPossibleValue(test);
+                    }
+                }
+
+                if (currTile.getPossibleValues().size() == 1) {
+                    setValue(board, row, col, 0);
+                }
+            }
+        }
+
+//        Utils.printBoard(board);
 
         do {
             currentFound = Main.numberSet;
 
-            // Add all possible values to grid
-            for (int row = 0; row < Main.SIZE; row++) {
-                for (int col = 0; col < Main.SIZE; col++) {
-                    Tile currTile = board[row][col];
-                    if (currTile.getValue() != 0) {
-                        continue;
-                    }
-
-                    for (int test = 1; test <= Main.SIZE; test++) {
-                        if (isValidFor(board, test, row, col)) {
-                            currTile.addPossibleValue(test);
-                        }
-                    }
-
-                    if (currTile.getPossibleValues().size() == 1) {
-                        setValue(board, row, col, 0);
-                    }
-                }
-            }
-
-//        Utils.printBoard(board);
-
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 threads[i] = new Thread(new MultiThreadingDemo(i));
                 threads[i].start();
             }
 
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 try {
                     threads[i].join();
                 } catch (InterruptedException e) {
@@ -203,14 +207,14 @@ class ParallelSolver {
                 }
             }
 
-//        Utils.printBoard(board);
+//            Utils.printBoard(board);
 
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 threads[i] = new Thread(new MultiThreadingDemo2(i));
                 threads[i].start();
             }
 
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 try {
                     threads[i].join();
                 } catch (InterruptedException e) {
@@ -218,12 +222,12 @@ class ParallelSolver {
                 }
             }
 
-            for (int i = 0; i < Main.MINI_SIZE; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 threads[i] = new Thread(new MultiThreadingDemo3(i));
                 threads[i].start();
             }
 
-            for (int i = 0; i < numThreads; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 try {
                     threads[i].join();
                 } catch (InterruptedException e) {

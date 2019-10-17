@@ -6,7 +6,7 @@ public class Main {
     static Random random;
 
     static final int DIFFICULTY = 100;
-    static int MINI_SIZE = 5;
+    static int MINI_SIZE = 10;
     static int SIZE = MINI_SIZE * MINI_SIZE;
 
     static int numberSet = 0;
