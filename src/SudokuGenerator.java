@@ -4,7 +4,7 @@ import java.util.Random;
 
 class SudokuGenerator {
 
-    static int[][] getTestInputBoard(Random random, int miniSize) {
+    static int[][] getTestInputBoard(Random random, int miniSize, String fileName) {
         int size = miniSize * miniSize;
 
         // Create empty sudoku of correct size
@@ -42,8 +42,9 @@ class SudokuGenerator {
         }
 
         // board is now completed sudoku so save as solution
-        String filename = "data/" + miniSize + "_complete.txt";
-        Utils.saveBoardToCSV(board, filename);
+        String completeFile = fileName.substring(0, fileName.length() - 4) + "_complete.txt";
+//        String filename = "data/" + miniSize + "_complete.txt";
+        Utils.saveBoardToCSV(board, completeFile, miniSize);
 
         int bestNumSet = size * size;
 
@@ -64,9 +65,9 @@ class SudokuGenerator {
                 board[row][col] = 0;
                 // Find out if the current board is solvable
                 SingleSolver singleSolver = new SingleSolver();
-                ParallelSolver parallelSolver = new ParallelSolver();
-                ReturnStruct returnStruct = singleSolver.trySolve(board, false);
-//                ReturnStruct returnStruct = parallelSolver.trySolveParallel(board, true);
+                ParallelSolver parallelSolver = new ParallelSolver(6);
+//                ReturnStruct returnStruct = singleSolver.trySolve(board, false, miniSize);
+                ReturnStruct returnStruct = parallelSolver.trySolveParallel(board, true, miniSize);
                 solvable = returnStruct.solvable;
 
                 // If it was solvable, then keep it that way, otherwise put back the value that was there,
@@ -84,8 +85,8 @@ class SudokuGenerator {
         System.out.println("Finished creating sudoku with " + bestNumSet + " out of " + (size * size) + " initial elements");
         System.out.println("~~~~~~~~~~~~~~~~~~~~~");
 
-        filename = "data/" + miniSize + ".txt";
-        Utils.saveBoardToCSV(board, filename);
+//        filename = "data/" + miniSize + ".txt";
+        Utils.saveBoardToCSV(board, fileName, miniSize);
 
         return board;
     }

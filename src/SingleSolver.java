@@ -1,7 +1,12 @@
 class SingleSolver {
 
-    ReturnStruct trySolve(int[][] inputBoard, boolean debug) {
+    private int miniSize;
+    private int size;
+
+    ReturnStruct trySolve(int[][] inputBoard, boolean debug, int miniSize) {
         Tile[][] board = Utils.setupBoard(inputBoard);
+        this.miniSize = miniSize;
+        this.size = miniSize * miniSize;
         int currentFound;
         int numRuns = 0;
 
@@ -12,14 +17,14 @@ class SingleSolver {
 //            System.out.println("Iteration " + numRuns);
             currentFound = Main.numberSet;
 
-            for (int row = 0; row < Main.SIZE; row++) {
-                for (int col = 0; col < Main.SIZE; col++) {
+            for (int row = 0; row < size; row++) {
+                for (int col = 0; col < size; col++) {
                     Tile currTile = board[row][col];
                     if (currTile.getValue() != 0) {
                         continue;
                     }
 
-                    for (int test = 1; test <= Main.SIZE; test++) {
+                    for (int test = 1; test <= size; test++) {
                         if (isValidFor(board, test, row, col)) {
 //                            System.out.printf("%d is valid for [%d][%d]\n", test, row, col);
                             if (numRuns == 1) {
@@ -37,7 +42,7 @@ class SingleSolver {
             }
 
             for (int col = 0; col < board.length; col++) {
-                for (int test = 1; test <= Main.SIZE; test++) {
+                for (int test = 1; test <= size; test++) {
                     int count = 0;
                     int lastRow = 0;
                     for (int row = 0; row < board.length; row++) {
@@ -59,7 +64,7 @@ class SingleSolver {
             }
 
             for (int row = 0; row < board.length; row++) {
-                for (int test = 1; test <= Main.SIZE; test++) {
+                for (int test = 1; test <= size; test++) {
                     int count = 0;
                     int lastCol = 0;
                     for (int col = 0; col < board.length; col++) {
@@ -80,18 +85,18 @@ class SingleSolver {
                 }
             }
 
-            for (int squareRow = 0; squareRow < Main.MINI_SIZE; squareRow++) {
-                for (int squareCol = 0; squareCol < Main.MINI_SIZE; squareCol++) {
-                    for (int test = 1; test <= Main.SIZE; test++) {
+            for (int squareRow = 0; squareRow < miniSize; squareRow++) {
+                for (int squareCol = 0; squareCol < miniSize; squareCol++) {
+                    for (int test = 1; test <= size; test++) {
                         int count = 0;
                         int lastRow = -1;
                         int lastCol = -1;
                         boolean sameRow = true;
                         boolean sameCol = true;
 
-                        for (int i = 0; i < Main.SIZE; i++) {
-                            int row = squareRow * Main.MINI_SIZE + (i / Main.MINI_SIZE);
-                            int col = squareCol * Main.MINI_SIZE + (i % Main.MINI_SIZE);
+                        for (int i = 0; i <size; i++) {
+                            int row = squareRow * miniSize + (i / miniSize);
+                            int col = squareCol * miniSize+ (i % miniSize);
 
                             if (board[row][col].getValue() == test) {
                                 count = 0;
@@ -120,8 +125,8 @@ class SingleSolver {
 
                         if (sameRow) {
 //                            System.out.println("All values of " + test + " occur in the same row for [" + lastRow + "][" + lastCol + "]");
-                            for (int i = 0; i < Main.SIZE; i++) {
-                                if (!(i >= squareCol * Main.MINI_SIZE && i < (squareCol + 1) * Main.MINI_SIZE)) {
+                            for (int i = 0; i < size; i++) {
+                                if (!(i >= squareCol * miniSize && i < (squareCol + 1) * miniSize)) {
                                     board[lastRow][i].removePossibleValue(test);
                                 }
                             }
@@ -129,8 +134,8 @@ class SingleSolver {
 
                         if (sameCol) {
 //                            System.out.println("All values of " + test + " occur in the same column for [" + lastRow + "][" + lastCol + "]");
-                            for (int i = 0; i < Main.SIZE; i++) {
-                                if (!(i >= squareRow * Main.MINI_SIZE && i < (squareRow + 1) * Main.MINI_SIZE)) {
+                            for (int i = 0; i < size; i++) {
+                                if (!(i >= squareRow * miniSize && i < (squareRow + 1) * miniSize)) {
                                     board[i][lastCol].removePossibleValue(test);
                                 }
                             }
@@ -142,11 +147,11 @@ class SingleSolver {
                     }
                 }
             }
-        } while (!Utils.isComplete() && Main.numberSet != currentFound);
+        } while (!Utils.isComplete(size) && Main.numberSet != currentFound);
         if (debug) {
             Utils.printBoard(board);
         }
-        return new ReturnStruct(Utils.isComplete(), board);
+        return new ReturnStruct(Utils.isComplete(size), board);
     }
 
     private void setValue(Tile[][] board, int row, int col, int value) {
@@ -154,13 +159,13 @@ class SingleSolver {
         int updatedValue = value > 0 ? value : tile.getPossibleValues().get(0);
         tile.setValue(updatedValue);
 
-        for (int r = 0; r < board.length; r++) {
-            board[r][col].removePossibleValue(updatedValue);
-        }
-
-        for (int c = 0; c < board.length; c++) {
-            board[row][c].removePossibleValue(updatedValue);
-        }
+//        for (int r = 0; r < board.length; r++) {
+//            board[r][col].removePossibleValue(updatedValue);
+//        }
+//
+//        for (int c = 0; c < board.length; c++) {
+//            board[row][c].removePossibleValue(updatedValue);
+//        }
 
         Main.numberSet++;
 
@@ -170,7 +175,7 @@ class SingleSolver {
     }
 
     private boolean isValidFor(Tile[][] board, int test, int given_row, int given_col) {
-        for (int col = 0; col < Main.SIZE; col++) {
+        for (int col = 0; col < size; col++) {
             if (board[given_row][col].getValue() == test) {
                 return false;
             }
@@ -182,11 +187,11 @@ class SingleSolver {
             }
         }
 
-        int boxRow = given_row / Main.MINI_SIZE;
-        int boxCol = given_col / Main.MINI_SIZE;
+        int boxRow = given_row / miniSize;
+        int boxCol = given_col / miniSize;
 
-        for (int row = boxRow * Main.MINI_SIZE; row < boxRow * Main.MINI_SIZE + Main.MINI_SIZE; row++) {
-            for (int col = boxCol * Main.MINI_SIZE; col < boxCol * Main.MINI_SIZE + Main.MINI_SIZE; col++) {
+        for (int row = boxRow * miniSize; row < boxRow * miniSize + miniSize; row++) {
+            for (int col = boxCol * miniSize; col < boxCol * miniSize + miniSize; col++) {
                 if (board[row][col].getValue() == test) {
                     return false;
                 }

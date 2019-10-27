@@ -7,7 +7,7 @@ import java.util.List;
 
 class Utils {
 
-    static void saveBoardToCSV(int[][] board, String filename) {
+    static void saveBoardToCSV(int[][] board, String filename, int miniSize) {
         // Add all values to list of list
         List<List<String>> rows = new ArrayList<>();
         for (int[] row : board) {
@@ -22,7 +22,7 @@ class Utils {
         FileWriter csvWriter;
         try {
             csvWriter = new FileWriter(filename);
-
+            csvWriter.append(miniSize + "\n");
             for (List<String> rowData : rows) {
                 csvWriter.append(String.join(",", rowData));
                 csvWriter.append("\n");
@@ -37,27 +37,12 @@ class Utils {
 
     static void verifyAgainstCSV(Tile[][] inputBoard, String filename) {
         BufferedReader csvReader;
-        int inputVerification[][] = new int[Main.SIZE][Main.SIZE];
-        try {
-            csvReader = new BufferedReader(new FileReader(filename));
-            String row;
-            int r = 0;
-            while ((row = csvReader.readLine()) != null) {
-                String[] data = row.split(",");
-                for (int i = 0; i < Main.SIZE; i++) {
-                    inputVerification[r][i] = Integer.parseInt(data[i]);
-                }
-                r++;
-            }
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        int inputVerification[][] = readFromCSV(filename);
 
         boolean verified = true;
 
-        for (int i = 0; i < Main.SIZE; i++) {
-            for (int j = 0; j < Main.SIZE; j++) {
+        for (int i = 0; i < inputBoard.length; i++) {
+            for (int j = 0; j < inputBoard.length; j++) {
                 if (inputBoard[i][j].getValue() != inputVerification[i][j]) {
                     verified = false;
                     System.err.println("Mismatch at " + i + " " + j);
@@ -70,11 +55,35 @@ class Utils {
         }
     }
 
+    static int[][] readFromCSV(String filename) {
+        BufferedReader csvReader;
+        int[][] returnBoard = null;
+        try {
+            csvReader = new BufferedReader(new FileReader(filename));
+            String row = csvReader.readLine();
+            int size = Integer.parseInt(row);
+            returnBoard = new int[size*size][size*size];
+            int r = 0;
+            while ((row = csvReader.readLine()) != null) {
+                String[] data = row.split(",");
+                for (int i = 0; i < size*size; i++) {
+                    returnBoard[r][i] = Integer.parseInt(data[i]);
+                }
+                r++;
+            }
+            csvReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return returnBoard;
+    }
+
     static Tile[][] setupBoard(int[][] inputBoard) {
         Main.numberSet = 0;
-        Tile[][] board = new Tile[Main.SIZE][Main.SIZE];
-        for (int row = 0; row < Main.SIZE; row++) {
-            for (int col = 0; col < Main.SIZE; col++) {
+        Tile[][] board = new Tile[inputBoard.length][inputBoard.length];
+        for (int row = 0; row < inputBoard.length; row++) {
+            for (int col = 0; col < inputBoard.length; col++) {
                 board[row][col] = new Tile();
                 if (inputBoard[row][col] != 0) {
                     board[row][col].setValue(inputBoard[row][col]);
@@ -94,7 +103,7 @@ class Utils {
             System.out.println();
         }
 
-        System.out.println("Number set: " + Main.numberSet + " out of " + (Main.SIZE * Main.SIZE) + " == " + (100.0 * Main.numberSet / (Main.SIZE * Main.SIZE)) + "%");
+        System.out.println("Number set: " + Main.numberSet + " out of " + (board.length * board.length) + " == " + (100.0 * Main.numberSet / (board.length * board.length)) + "%");
         System.out.println();
 
 //        for (int row = 0; row < board.length; row++) {
@@ -113,7 +122,7 @@ class Utils {
 //        }
     }
 
-    static boolean isComplete() {
-        return Main.numberSet == Main.SIZE * Main.SIZE;
+    static boolean isComplete(int size) {
+        return Main.numberSet == size * size;
     }
 }
